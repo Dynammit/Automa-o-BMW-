@@ -1,0 +1,108 @@
+ATUALIZAR REDE DE CONCESSIONARIAS - guia rapido (todo mes)
+==========================================================
+
+O QUE E
+Um unico programa baixa as lojas de todas as marcas nos sites oficiais, compara com a aba "Lista Operacoes"
+da planilha da equipe de rede e gera DOIS arquivos na pasta saida (cada rodada tem a sua pasta):
+
+ 1) REP_AAMMDD_...xlsx  = A ENTREGA PARA A EQUIPE DE REDE.
+    E uma copia da planilha deles (mesmo nome, so com a data de hoje) em que:
+      VERDE    = possivel loja nova (linha acrescentada no FIM da aba "Lista Operacoes")
+      VERMELHO = operacao da lista que nao aparece no site da marca (possivel saida)
+    A coluna STATUS (PROGRAMA) explica cada linha. As outras abas nao sao alteradas.
+    Marcas com erro, leitura incompleta ou dados antigos ficam SEM destaque (e isso aparece no painel).
+    CUIDADO: o verde entra na contagem da aba "Qntd Operacoes" (que usa a lista inteira) quando o Excel recalcular.
+    Por isso a decisao de incluir na lista oficial e da equipe de rede; nao substitua a planilha oficial por este arquivo.
+    Se este arquivo for enviado de volta ao programa no mes seguinte, as linhas NOVA sao ignoradas automaticamente.
+ 2) Comparacao_Rede_AAAA-MM-DD.xlsx = RELATORIO DE CONFERENCIA (so para voce / quem mantem).
+    Mostra se a rodada foi confiavel (erros, leitura incompleta, arquivos manuais velhos, variacao vs. mes anterior).
+    Nao precisa enviar para a equipe de rede.
+
+FORMA MAIS FACIL: PAINEL NO NAVEGADOR
+Coloque na mesma pasta: atualizar_rede.py, app_rede.py e Iniciar_Rede.bat. De dois cliques em Iniciar_Rede.bat:
+1) arraste a planilha da rede; 2) (opcional) 'Testar conexao'; 3) clique em 'Atualizar agora';
+4) confira o resumo na tela e baixe a 'Planilha para a equipe de rede (com cores)'.
+Se alguma marca falhar: resolva (veja 'Se uma marca der erro') e clique em 'Refazer so as marcas com problema'.
+Arquivos manuais (GAC etc.) tambem se arrastam no proprio painel. O painel so roda no seu computador.
+
+OU PELO TERMINAL
+1. Coloque na mesma pasta: atualizar_rede.py e a planilha da rede mais recente (aba "Lista Operacoes").
+2. Abra a pasta no VS Code. Abra o terminal (Terminal > Novo Terminal). NAO use o botao de "play".
+3. Digite:   python atualizar_rede.py
+   (pode demorar uns 5 a 10 minutos; a GWM e a mais lenta)
+4. Abra a planilha gerada. Comece pela aba "Resumo geral".
+
+ABAS DA PLANILHA
+- Resumo geral: uma linha por marca. "Situacao" diz se deu certo ou qual erro ocorreu.
+- Para confirmar: so o que a equipe de rede precisa decidir (novas, fechadas, divergentes), com a coluna Status
+  (NOVO neste mes / ja aparecia antes) e colunas em branco para ela responder 'Confirmado?'.
+- Possiveis lojas novas: loja no site, de grupo que ja esta na lista, mas ausente da lista.
+- Possiveis fechadas: operacao da lista que nao aparece mais no site.
+- Endereco divergente: mesmo grupo/cidade, mas endereco ou coordenada diferente (conferir).
+- Outros grupos: lojas do site de grupos que nao estao no relatorio (normalmente ignorar).
+- Qualidade da lista: problemas na propria lista da rede (sem coordenada, coordenada fora do Brasil,
+  UF que nao combina com a coordenada, duplicidade). Corrija na origem com a equipe de rede.
+- Avisos: erros e observacoes de cada marca.
+IMPORTANTE: tudo e "possivel". Confirme com a equipe de rede antes de alterar a lista.
+O grupo de cada loja e deduzido (pelo nome, e-mail ou CNPJ) - e uma estimativa.
+
+QUANTIDADE ESPERADA DE LOJAS NO SITE (se vier bem diferente, algo mudou)
+BYD ~292 lojas fisicas (443 registros) | GWM ~116-135 | Omoda&Jaecoo ~110 | Jetour ~60 (site mostra so parte)
+GAC ~76 | Caoa Chery ~160 | Leapmotor ~92 | Denza ~21 | Zeekr ~14 | Volvo ~51 | MG ~40 | Geely ~57
+
+CONFERENCIAS AUTOMATICAS (o programa faz sozinho)
+- Leitura incompleta: se o site trouxe bem menos lojas que o normal (menos de 60% do mes anterior), a marca aparece como
+  ATENCAO e as 'possiveis fechadas' dela ficam ocultas, para nao gerar falso alarme. Rode de novo ou use o plano B.
+- Variacao vs. mes anterior: o Resumo mostra quantas lojas a mais/menos o site trouxe. Mudanca grande vira ATENCAO.
+- A conta precisa fechar: iguais + divergentes + fechadas = operacoes da lista. Se nao fechar, aparece ATENCAO.
+- Historico: cada rodada completa grava um resumo na pasta 'historico'. NAO apague essa pasta; e ela que permite
+  dizer 'NOVO neste mes' e comparar com o mes anterior.
+- log.txt: dentro da pasta saida de cada rodada. Se algo der errado, mande esse arquivo para quem der suporte.
+- Se a planilha de resultado estiver aberta no Excel, o programa grava com outro nome (com a hora) em vez de falhar.
+
+SE UMA MARCA DER ERRO
+As outras continuam normalmente. O erro aparece no Resumo e na aba Avisos, ja explicado em portugues. O programa:
+- tenta de novo sozinho quando a falha e passageira (site instavel, sem internet); nao insiste quando e bloqueio.
+- se a marca falhar mas existir uma leitura boa de outro mes (pasta 'cache'), usa essa e avisa "dados ANTIGOS de dd/mm/aaaa"
+  (essa marca fica sem destaque na planilha colorida). Nao apague a pasta 'cache'.
+- 'Testar conexao' (painel) ou  python atualizar_rede.py --diagnostico  mostra em 1 minuto quais sites sao alcancados.
+Causas comuns e o que fazer:
+- "bloqueou o acesso (HTTP 403)" / proxy / sem acesso: rede ou VPN da empresa, ou protecao do site (Volvo costuma dar 403).
+  Tente fora da VPN ou use o PLANO B abaixo. O programa NAO tenta burlar bloqueios.
+- "exige assinatura (401)" / GAC code 4407: o site so responde ao navegador. Use o arquivo manual (GAC e Zeekr sao sempre manuais).
+- "erro de certificado": rode  pip install truststore  e tente de novo (o Iniciar_Rede.bat ja faz isso).
+- "o formato dos dados mudou" / "sem nenhuma loja": o site mudou. Avise quem mantem o programa (mande o log.txt).
+ARQUIVOS MANUAIS: no inicio de cada rodada o programa lista os que faltam ou estao velhos (mais de 35 dias).
+PLANO B (arquivo manual): crie uma pasta "manual" ao lado do script e salve la:
+- zeekr.json (OBRIGATORIO todo mes para a Zeekr): site da Zeekr > Concessionarias > F12 > Rede (Network) > filtro Fetch/XHR
+  > recarregar > clique na linha 'list' (.../store/list) > Resposta > copiar > salvar como zeekr.json (so a resposta, nunca os cabecalhos)
+- gac.json (OBRIGATORIO todo mes para a GAC): site da GAC > Concessionarias > F12 > aba Rede (Network)
+  > clique na linha "list-by-nearby" > aba Resposta > copiar tudo > salvar como gac.json
+- jetour.json: abra https://jetourbr.com/wp-admin/admin-ajax.php?action=jetour_lojas_near e salve como jetour.json
+- caoa_chery.html, geely.html (pagina /contato), mg.html, volvo.html:
+  abra a pagina da marca, Ctrl+S, tipo "Pagina da Web, somente HTML".
+Depois rode de novo; se quiser so uma marca:  python atualizar_rede.py --marcas GAC
+
+OUTRAS OPCOES
+python atualizar_rede.py --lista NomeDaPlanilha.xlsx     (se tiver mais de uma planilha na pasta)
+python atualizar_rede.py --marcas BYD,GWM                (so algumas marcas)
+python atualizar_rede.py --sem-download saida_2026-11-06 (reusa CSVs ja baixados, sem internet)
+
+
+
+QUANDO UM GRUPO/APELIDO NOVO APARECER
+Abra atualizar_rede.py no VS Code e edite so a secao "CONFIGURACOES" no topo
+(APELIDOS e DOMINIOS_BYD). Siga o formato das linhas que ja existem.
+
+COMO ADICIONAR UMA MARCA NOVA (ex.: marca de moto)
+1) A marca precisa estar na aba "Lista Operacoes" (coluna MARCA) com o nome exato que sera cadastrado.
+2) Se o site da marca tem uma API que devolve JSON com as lojas: abra o arquivo marcas_extras.csv (Excel) e acrescente
+   UMA LINHA preenchendo as colunas (o exemplo no arquivo mostra cada uma). Nao precisa programar.
+   Como achar a API: abra a pagina de concessionarias da marca > F12 > Rede (Network) > Fetch/XHR > recarregue >
+   procure a linha cuja Resposta tem as lojas. Se a pagina sempre pede verificacao de robo ou assinatura, nao serve.
+3) Se o site for diferente (HTML, assinatura, bloqueio), e preciso uma funcao nova no programa: leia o CLAUDE.md
+   (feito para ser entregue a um assistente de IA no VS Code) e peca "adicione a marca X".
+Marcas que nao existirem na lista da rede apenas baixam as lojas, sem comparar.
+
+PRIMEIRA VEZ NO COMPUTADOR NOVO
+pip install pandas numpy openpyxl truststore
